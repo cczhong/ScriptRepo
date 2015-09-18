@@ -52,6 +52,7 @@ if($help || !defined $file1 || !defined $file2 ||
   print "	--suf1:		the strings to be appended as suffixes for columns in file1\n";
   print "	--suf2:		the strings to be appended as suffixes for columns in file2\n";
   print "	--connecter:	the connecter used to concatenate the columns\n";
+  print "	--addkey:	also outputing the reconstructed key\n";
   print "	--mode:		the output mode\n";
   print "			  0: summary statistics\n";
   print "			  1: overlapped entries in f1\n";
@@ -170,7 +171,7 @@ if($mode == 0)  {
 }  elsif($mode == 1)  {
   foreach(sort keys %common_entries)  {
     if($add_key)  {
-      push @to_print, "$_	||	$f1_entries{$_}";
+      push @to_print, "$_	$f1_entries{$_}";
     }  else  {
       push @to_print, "$f1_entries{$_}";
     }
@@ -178,7 +179,7 @@ if($mode == 0)  {
 }  elsif($mode == -1)  {
   foreach(sort keys %common_entries)  {
     if($add_key)  {
-      push @to_print, "$_ ||      $f2_entries{$_}";
+      push @to_print, "$_	$f2_entries{$_}";
     }  else  {
       push @to_print, "$f2_entries{$_}";
     }
@@ -186,7 +187,7 @@ if($mode == 0)  {
 }  elsif($mode == 2)  {
   foreach(sort keys %f1_entries)  {
     if($add_key)  {
-      push @to_print, "$_ ||      $f1_entries{$_}" if (!exists $common_entries{$_});
+      push @to_print, "$_	$f1_entries{$_}" if (!exists $common_entries{$_});
     }  else  {
       push @to_print, "$f1_entries{$_}" if (!exists $common_entries{$_});
     }
@@ -194,7 +195,7 @@ if($mode == 0)  {
 }  elsif($mode == -2)  {
   foreach(sort keys %f2_entries)  {
     if($add_key)  {
-      push @to_print, "$_ ||      $f2_entries{$_}" if (!exists $common_entries{$_});
+      push @to_print, "$_	$f2_entries{$_}" if (!exists $common_entries{$_});
     }  else  {
       push @to_print, "$f2_entries{$_}" if (!exists $common_entries{$_});
     }
