@@ -60,8 +60,10 @@ close $IN;
 # parse the last line of the header to define column IDs
 my $info_idx;
 my $format_idx;
+my $header_line;
 for(my $i = 0; $i < scalar(@contents); ++ $i)   {
     if($contents[$i] =~ /\#CHROM/)    {
+        $header_line = $contents[$i];
         my @decom = split /\s+/, $contents[$i];
         for(my $j = 0; $j < scalar(@decom); ++ $j)   {
             if($decom[$j] eq "INFO")    {
@@ -71,6 +73,25 @@ for(my $i = 0; $i < scalar(@contents); ++ $i)   {
             }
         }
     }
+}
+
+# handle header information for summary call
+if($summary)    {
+    my @summary_header;
+    my @decom = split /\s+/, $header_line;
+    for(my $i = 0; $i < 5; ++ $i)   {
+        push @summary_header, $decom[$i];
+    }
+    for(my $i = $format_idx + 1; $i < scalar(@decom); ++ $i)   {
+        push @summary_header, $decom[$i] . "_DP";
+        push @summary_header, $decom[$i] . "_VAF";
+    }
+    for(my $i = 0; $i < scalar(@summary_header) - 1; ++ $i)   {
+        print "$summary_header[$i]\t" if !defined $out;
+        print $OUT "$summary_header[$i]\t" if defined $out;
+    }
+    print "$summary_header[-1]\n" if !defined $out;
+    print $OUT "$summary_header[-1]\n" if defined $out;
 }
 
 sub CheckCondition($$)  {
