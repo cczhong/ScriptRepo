@@ -38,7 +38,7 @@ while(<$IN>)  {
 close $IN;
 
 my $acc_len = 0;
-@lengths = sort @lengths;
+@lengths = sort {$a <=> $b} @lengths;
 for(my $i = scalar(@lengths) - 1; $i >= 0; -- $i)  {
   $acc_len += $lengths[$i];
   if($acc_len >= $total_length * $N / 100)  {
