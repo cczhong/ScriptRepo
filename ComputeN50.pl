@@ -26,17 +26,18 @@ if($N <= 0 || $N >= 100)  {
 
 my $total_length = 0;
 my @lengths;
-my $accu_len = 0;
+push @lengths, 0;
+my $seq_len = 0;
 open my $IN, "<$fasta_file" or die "Cannot open file: $!\n";
 while(<$IN>)  {
   chomp;
   if(/^\>/)  {
-    push @lengths, $accu_len;
-    $total_length += $accu_len;
-    $accu_len = 0;
+    push @lengths, $seq_len;
+    $total_length += $seq_len;
+    $seq_len = 0;
     next;
   }
-  $accu_len += length($_);
+  $seq_len += length($_);
 }
 close $IN;
 
