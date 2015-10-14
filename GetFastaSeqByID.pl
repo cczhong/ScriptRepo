@@ -22,7 +22,7 @@ GetOptions (
   "ptail" => \$ptail,
   "reverse" => \$reverse,
   "verbose" => \$verbose,
-  "append" => \$header_append,
+  "append=s" => \$header_append,
   "help" => \$help
 ) or die("Error in command line arguments\n");
 
