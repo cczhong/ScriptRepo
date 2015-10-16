@@ -20,10 +20,12 @@ if(!defined $fq_file || !defined $fa_file)  {
 
 open my $IN, "<$fq_file" or die "Cannot open FASTQ file: $!\n";
 open my $OUT, ">$fa_file" or die "Cannot create FASTA file: $!\n";
+int $n = 0;
 while(<$IN>)  {
   chomp;
   my $line = $_;
-  if($line =~ /^\@/)  {
+  ++ $n;
+  if($n % 4 == 1 && $line =~ /^\@/)  {
     $line =~ s/^\@/\>/;
     print $OUT "$line\n";
     $line = <$IN>;
