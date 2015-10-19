@@ -10,7 +10,8 @@ my $min_len = 0;	# the minimum length of contig to be considered in the calulati
 
 GetOptions (
   "fasta=s" => \$fasta_file,
-  "N=f" => \$N
+  "N=f" => \$N,
+  "min=i" => \$min_len
 ) or die("Error in command line arguments\n");
 
 if(!defined $fasta_file)  {
