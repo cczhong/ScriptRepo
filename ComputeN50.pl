@@ -4,8 +4,9 @@ use Getopt::Long;
 
 # randomly sub-sampling reads from the given FASTA file
 
-my $fasta_file;			# the original fasta file
-my $N = 50;         # the length cutoff (the number after the N)
+my $fasta_file;		# the original fasta file
+my $N = 50;		# the length cutoff (the number after the N)
+my $min_len = 0;	# the minimum length of contig to be considered in the calulation
 
 GetOptions (
   "fasta=s" => \$fasta_file,
@@ -15,8 +16,9 @@ GetOptions (
 if(!defined $fasta_file)  {
   print "ComputeN50.pl: compute N50 for a given FASTA file\n";
   print "Usage: perl FastaSubSampling --fasta=[FASTA_FILE]\n";
-  print "	--fasta:  the FASTA file that contains the contigs\n";
-  print "	--N:      the N value (default: 50)\n\n";
+  print "	--fasta:	the FASTA file that contains the contigs\n";
+  print "	--N:		the N value (default: 50)\n";
+  print "	--min:		the minimum contig length to be considered for the caculation\n\n";
   exit();
 }
 
@@ -32,8 +34,10 @@ open my $IN, "<$fasta_file" or die "Cannot open file: $!\n";
 while(<$IN>)  {
   chomp;
   if(/^\>/)  {
-    push @lengths, $seq_len;
-    $total_length += $seq_len;
+    if($seq_len >= $min_len)  {
+      push @lengths, $seq_len;
+      $total_length += $seq_len;
+    }
     $seq_len = 0;
     next;
   }
