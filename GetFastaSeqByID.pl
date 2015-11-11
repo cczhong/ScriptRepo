@@ -10,6 +10,7 @@ my $reverse = 0;		# if the tag is set, output sequences that are NOT in the id_l
 my $verbose = 0;		# verbose
 my $phead = 0;			# the pattern must begin at the header
 my $ptail = 0;			# the pattern must end at the header
+my $header_append = "";		# the text to be appended to the end of the header when output
 my $help = 0;			# print help information
 
 GetOptions (
@@ -21,6 +22,7 @@ GetOptions (
   "ptail" => \$ptail,
   "reverse" => \$reverse,
   "verbose" => \$verbose,
+  "append=s" => \$header_append,
   "help" => \$help
 ) or die("Error in command line arguments\n");
 
@@ -36,6 +38,7 @@ if($help || !defined $fasta_file || !defined $id_list || !defined $out)  {
   print "	--ptail:	requiring that the keywords must be suffix of the header\n";
   print "	--reverse:	output sequences that do NOT match the IDs\n";
   print "	--verbose:	print intermediate information\n";
+  print "	--append:	the text to be appended to the end of the original header\n";
   print "	--help:		print this information\n";
   print "\n";
   exit;
@@ -86,7 +89,11 @@ while(<$SEQIN>)  {
     }
     if(($found and !$reverse) or (!$found and $reverse))  {
       $tag = 1;
-      print $OUT ">$rid\n";
+      if(length($header_append) > 0)  {
+        print $OUT ">$rid\_$header_append\n";
+      }  else  {
+        print $OUT ">$rid\n";
+      }
     }  else  {
       $tag = 0;
     }

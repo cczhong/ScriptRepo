@@ -2,23 +2,26 @@
 use strict;
 use Getopt::Long;
 
-my $pfam_file;			# the combined Pfam or Rfam file
+my $pfam_file;		# the combined Pfam or Rfam file
 my $out_dir;			# the output directory for individual HM or CV models
+my $use_name = 0; # use the HMM name as the name of the individual file instead of accession
 my $fext = "hmm";
 
 GetOptions (
   "file=s" => \$pfam_file,
   "out=s" => \$out_dir,
-  "ext=s" => \$fext
+  "ext=s" => \$fext,
+  "use_name" => \$use_name
 ) or die("Error in command line arguments\n");
 
 if(!defined $pfam_file || !defined $out_dir)  {
   print "SlicePRfamHMM.pl: slicing individual HM or CV model from multi-Pfam/Rfam file\n";
   print "Usage: perl SlicePRfamHMM.pl [P/RFAM_FILE] [OUTPUT_DIRECTORY]\n";
-  print "	--file:		the multi-Pfam/Rfam file\n";
-  print "	--out:		the output directory for individual models\n"; 
-  print "			(please make sure the folder is empty as the program might overwrite existing files)\n";
-  print "	--ext:		the file extension (default \'hmm\', suggesting \'cm\' for Rfam models)\n";
+  print "	--file:		  the multi-Pfam/Rfam file\n";
+  print "	--out:		  the output directory for individual models\n"; 
+  print "			  (please make sure the folder is empty as the program might overwrite existing files)\n";
+  print "	--ext:		  the file extension (default \'hmm\', suggesting \'cm\' for Rfam models)\n";
+  print "--use_name:  use the name of the profile as individual file name instead of accession ID\n";
   exit;
 }
 
@@ -39,7 +42,9 @@ while(<$IN>)  {
       $line = <$IN>;
       chomp $line;
       push @contents, $line;
-      if($line =~ /ACC\s+(.*)\./ || $line =~ /ACC\s+(.*)/)  {
+      if(!$use_name && ($line =~ /ACC\s+(.*)\./ || $line =~ /ACC\s+(.*)/))  {
+        $accession = $1;
+      } elsif($use_name && $line =~ /NAME\s+(.*)/) {
         $accession = $1;
       }
     }
