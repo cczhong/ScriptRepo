@@ -12,6 +12,8 @@ my $maxaf;          # the maximum allel frequency
 my $checkall;       # only output the record if all fields satisfy the criterion
 my $checkone = 1;   # ouput the record if at least one field satisfy the criterion
 my $summary;        # summary the DP and allel frequency instead of filtering the VCF
+my $info_idx;       # the index for the information field (will be overwritten if header present)
+my $format_idx;     # the index for the format field (will be overwritten if header present)
 my $out;            # the output file 
 
 GetOptions (
@@ -23,21 +25,25 @@ GetOptions (
     "checkall" => \$checkall,
     "checkone" => \$checkone,
     "summary" => \$summary,
+    "info-column=i" => \$info_idx,
+    "format-column=i" => \$format_idx,
     "out=s" => \$out
 ) or die("Error in command line arguments\n");
 
 if(!defined $vcf || !(defined $mindp || defined $maxdp || defined $minaf || defined $maxaf))    {
     print "VCFDepthParser.pl: General-purpose parser for VCF depth of coverage and allel frequency.\n";
     print "Usage: perl VCFDepthParser.pl --vcf=[VCF_FILE] --(mindp/maxdp/minaf/maxaf)=[CUTOFF_VALUE]\n\n";
-    print "\t--vcf:       the VCF file to be parsed\n";
-    print "\t--mindp:     cutoff as the minimum depth of coverage\n";
-    print "\t--maxdp:     cutoff as the maximum depth of coverage\n";
-    print "\t--minaf:     cutoff as the minimum variant allel frequency\n";
-    print "\t--maxaf:     cutoff as the maximum variant allel frequency\n";
-    print "\t--checkall:  require all individuals parsing the criterion\n";
-    print "\t--checkone:  require at least one individual parsing the criterion (default)\n";
-    print "\t--summary:   instead of filtering VCF, output readable infomration regarding depth of frequncy and coverage\n";
-    print "\t--out:       the output file (default: STDOUT)\n";
+    print "\t--vcf:           the VCF file to be parsed\n";
+    print "\t--mindp:         cutoff as the minimum depth of coverage\n";
+    print "\t--maxdp:         cutoff as the maximum depth of coverage\n";
+    print "\t--minaf:         cutoff as the minimum variant allel frequency\n";
+    print "\t--maxaf:         cutoff as the maximum variant allel frequency\n";
+    print "\t--checkall:      require all individuals parsing the criterion\n";
+    print "\t--checkone:      require at least one individual parsing the criterion (default)\n";
+    print "\t--summary:       instead of filtering VCF, output readable infomration regarding depth of frequncy and coverage\n";
+    print "\t--info-column:   advise the column for the INFO field if header is absent (to be overwritten if header presents)\n";
+    print "\t--format-column: advise the column for the FORMAT field if header is absent (to be overwritten if header presents)\n";
+    print "\t--out:           the output file (default: STDOUT)\n";
     print "\n";
     exit;
 }
@@ -58,8 +64,6 @@ while(<$IN>) {
 close $IN;
 
 # parse the last line of the header to define column IDs
-my $info_idx;
-my $format_idx;
 my $header_line;
 for(my $i = 0; $i < scalar(@contents); ++ $i)   {
     if($contents[$i] =~ /\#CHROM/)    {
