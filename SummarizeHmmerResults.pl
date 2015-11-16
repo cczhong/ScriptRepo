@@ -60,7 +60,7 @@ while(<$IN>)  {
     $id = $1;
   } elsif(/^>>\s+(\S+)/)  {
     $target = $1;
-  } elsif((/\?/ || /\!/) && (/\[/ || /\]/))  {
+  } elsif(/\?/ || /\!/)  {
     my @decom = split /\s+/, $_;
     #print "$name	$id	$decom[$col_E]	$decom[$col_BG]	$decom[$col_ND]\n";
     my @info = ($name, $id, $decom[$col_E], $decom[$col_BG], $decom[$col_ND]);
