@@ -131,7 +131,7 @@ while(<$IN1>)  {
       $key .= $prefix1[$i] . $decom[$col1_ids[$i]] . $suffix1[$i] . $connecter;
     }
   }
-  $f1_entries{$key} = $line;
+  push @{$f1_entries{$key}}, $line;
 }
 close $IN1;
 
@@ -150,7 +150,7 @@ while(<$IN2>)  {
       $key .= $prefix2[$i]. $decom[$col2_ids[$i]] . $suffix2[$i] . $connecter;
     }
   }
-  $f2_entries{$key} = $line;
+  push @{$f2_entries{$key}}, $line;
 }
 close $IN2;
 
@@ -167,37 +167,46 @@ my $num_f2 = scalar(keys %f2_entries) - $num_cm;
 # generate output according to modes
 my @to_print;
 if($mode == 0)  {
-  push @to_print, "# statistics: F1_unique=$num_f1, F2_unique=$num_f2, Common=$num_cm";  
+  my $jaccard = $num_cm / ($num_f1 + $num_f2 + $num_cm);
+  push @to_print, "# statistics: F1_unique=$num_f1, F2_unique=$num_f2, Common=$num_cm, Jaccard=$jaccard";  
 }  elsif($mode == 1)  {
   foreach(sort keys %common_entries)  {
-    if($add_key)  {
-      push @to_print, "$_	$f1_entries{$_}";
-    }  else  {
-      push @to_print, "$f1_entries{$_}";
+    for(my $i = 0; $i < scalar(@{$f1_entries{$_}}); ++ $i) {
+      if($add_key)  {
+        push @to_print, "$_	${$f1_entries{$_}}[$i]";
+      }  else  {
+        push @to_print, "${$f1_entries{$_}}[$i]";
+      }
     }
   }
 }  elsif($mode == -1)  {
   foreach(sort keys %common_entries)  {
-    if($add_key)  {
-      push @to_print, "$_	$f2_entries{$_}";
-    }  else  {
-      push @to_print, "$f2_entries{$_}";
+    for(my $i = 0; $i < scalar(@{$f2_entries{$_}}); ++ $i) {
+      if($add_key)  {
+        push @to_print, "$_	${$f2_entries{$_}}[$i]";
+      }  else  {
+        push @to_print, "${$f2_entries{$_}}[$i]";
+      }
     }
   }
 }  elsif($mode == 2)  {
   foreach(sort keys %f1_entries)  {
-    if($add_key)  {
-      push @to_print, "$_	$f1_entries{$_}" if (!exists $common_entries{$_});
-    }  else  {
-      push @to_print, "$f1_entries{$_}" if (!exists $common_entries{$_});
+    for(my $i = 0; $i < scalar(@{$f1_entries{$_}}); ++ $i) {
+      if($add_key)  {
+        push @to_print, "$_	${$f1_entries{$_}}[$i]" if (!exists $common_entries{$_});
+      }  else  {
+        push @to_print, "${$f1_entries{$_}}[$i]" if (!exists $common_entries{$_});
+      }
     }
   }
 }  elsif($mode == -2)  {
   foreach(sort keys %f2_entries)  {
-    if($add_key)  {
-      push @to_print, "$_	$f2_entries{$_}" if (!exists $common_entries{$_});
-    }  else  {
-      push @to_print, "$f2_entries{$_}" if (!exists $common_entries{$_});
+    for(my $i = 0; $i < scalar(@{$f2_entries{$_}}); ++ $i) {
+      if($add_key)  {
+        push @to_print, "$_	${$f2_entries{$_}}[$i]" if (!exists $common_entries{$_});
+      }  else  {
+        push @to_print, "${$f2_entries{$_}}[$i]" if (!exists $common_entries{$_});
+      }
     }
   }
 }
