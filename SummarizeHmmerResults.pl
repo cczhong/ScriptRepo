@@ -60,7 +60,7 @@ while(<$IN>)  {
     $id = $1;
   } elsif(/^>>\s+(\S+)/)  {
     $target = $1;
-  } elsif(/\?/ || /\!/)  {
+  } elsif((/\?/ || /\!/) && (/\[/ || /\]/))  {
     my @decom = split /\s+/, $_;
     #print "$name	$id	$decom[$col_E]	$decom[$col_BG]	$decom[$col_ND]\n";
     my @info = ($name, $id, $decom[$col_E], $decom[$col_BG], $decom[$col_ND]);
@@ -105,12 +105,12 @@ sub GetOverlap($$$$)  {
   die "ERROR:	$a	$b	$c	$d\n";
 }
 
+
 # get the domain-annotated sequence
-open my $OUT, ">$out" or die "Cannot create file: $!\n";
-my $n = 0;
-foreach(keys %identified_regions)  {
+my @nr_regions;
+
+foreach(sort keys %identified_regions)  {
   my $target_seq = $_;
-  #print "$target_seq\n";
   my @regions = @{$identified_regions{$target_seq}};
   @regions = sort {$a->[2] <=> $b->[2]} @regions;
   my @checked;
@@ -124,17 +124,23 @@ foreach(keys %identified_regions)  {
     # if no signficant overlap with the already identified region
     if($mo <= $max_overlap and $region->[4] - $region->[3] + 1 >= $min_length)  {
       # get the sequence
-      if($get_seq)  {
-        my $seq = substr($seq_hash{$target_seq}, $region->[3] - 1, $region->[4] - $region->[3] + 1);
-        print $OUT ">domain_$n||$target_seq||$region->[0]||$region->[1]\n$seq\n";
-      }  else  {
-        print $OUT "$region->[0]	$target_seq	$region->[1]	$region->[2]	$region->[3]	$region->[4]\n";
-      }
-      ++ $n;
+      my @rinfo = ($region->[0], $target_seq, $region->[1], $region->[2], $region->[3], $region->[4]);
+      push @nr_regions, \@rinfo;
       # mark the region
       my @r = ($region->[3], $region->[4]);
       push @checked, \@r;
     }
   }
+}
+open my $OUT, ">$out" or die "Cannot create file: $!\n";
+my $n = 0;
+for(sort {$a->[3] <=> $b->[3]} @nr_regions) {
+  if($get_seq)  {
+    my $seq = substr($seq_hash{$_->[1]}, $_->[4] - 1, $_->[5] - $_->[4] + 1);
+    print $OUT ">domain_$n||$_->[1]||$_->[0]||$_->[2]\n$seq\n";
+  }  else  {
+    print $OUT "$_->[0]	$_->[1]	$_->[2]	$_->[3] $_->[4] $_->[5]\n";
+  }
+  ++ $n;
 }
 close $OUT;
