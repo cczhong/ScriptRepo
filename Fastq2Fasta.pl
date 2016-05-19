@@ -28,7 +28,7 @@ while(<$IN>)  {
   if($n % 4 == 1 && $line =~ /^\@/)  {
     $line =~ s/^\@/\>/;
     print $OUT "$line\n";
-    $line = <$IN>;
+    $line = <$IN>; ++ $n;
     print $OUT "$line";
   }
 }
