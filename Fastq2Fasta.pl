@@ -20,7 +20,7 @@ if(!defined $fq_file || !defined $fa_file)  {
 
 open my $IN, "<$fq_file" or die "Cannot open FASTQ file: $!\n";
 open my $OUT, ">$fa_file" or die "Cannot create FASTA file: $!\n";
-int $n = 0;
+my $n = 0;
 while(<$IN>)  {
   chomp;
   my $line = $_;
