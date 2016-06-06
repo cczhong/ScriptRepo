@@ -35,7 +35,7 @@ if(!-d $out_dir)  {
 }
 
 # define default paths
-my $annovar_home = "/home/hjia/tools/annovar";
+my $annovar_home = "/home/cczhong/Tools/ANNOVAR";
 my $hg_ver = "hg19";
 my $basename = basename($vcf_file, ".vcf");
 
