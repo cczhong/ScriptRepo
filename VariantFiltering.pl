@@ -196,6 +196,8 @@ if($somatic)  {
       my @decom = split /\s+/, $_;
       my $snp_id = $decom[0] . '_' . $decom[1] . '_' . $decom[3] . '_' . $decom[4];
       delete $tumor_info_hash{$snp_id} if exists $tumor_info_hash{$snp_id};
+      my $snp_id_chr = 'chr' . $snp_id;
+      delete $tumor_info_hash{$snp_id_chr} if exists $tumor_info_hash{$snp_id_chr};
     }
     close $IN;
   }
