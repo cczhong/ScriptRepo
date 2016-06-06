@@ -38,7 +38,7 @@ GetOptions (
 
 if($help || !$tumor_vcf || !defined $out)  {
   print "Function: perform cfDNA analysis pipeline.\n";  
-  print "Usage: perl VariantFiltering.pl --tumor=[FILE1] --control=[FILE2] --info_col=[INFO_COLUMN_INDEX] --fmt_col=[FMT_COLUMN_INDEX] --out=[OUTFILE]\n";
+  print "Usage: perl VariantFiltering.pl --tumor=[FILE1] --control=[FILE2] --out=[OUTFILE]\n";
   print "\t--tumor:\tthe VCF file contains the SNPs called from tumor sample\n";
   print "\t--control:\tthe VCF file contains the SNPs called from control sample;\n";
   print "\t\t\tmultiple files separated by colon \":\"\n";
