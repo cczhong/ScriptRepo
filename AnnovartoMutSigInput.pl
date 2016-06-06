@@ -11,19 +11,34 @@ use File::Basename;
 my $annovar_file;
 my $genome;
 my $out_file;
+my $col_gene = 3;
+my $col_chrom = 4;
+my $col_index = 5;
+my $col_from = 7;
+my $col_to = 8;
 
 GetOptions(
   "annovar=s" => \$annovar_file,
   "genome=s" => \$genome,
-  "out=s" => \$out_file
+  "out=s" => \$out_file,
+  "col_gene=i" => \$col_gene,
+  "col_chrom=i" => \$col_chrom,
+  "col_index=i" => \$col_index,
+  "col_from=i" => \$col_from,
+  "col_to=i" => \$col_to
 ) or die "Error in argument parsing: $!\n";
 
 if(!defined $annovar_file || !defined $genome || !defined $out_file)  {
   print "AnnovartoMutSigInput: Convert VCF file to MutSigCV input format\n";
   print "Usage: perl AnnovartoMutSigInput.pl --annovar=[ANNOVAR_EXON_FUNCTION] --genome=[HUMAN_GENOME_SEQ] --out=[OUTPUT_FILE]\n";
-  print "	--annovar:		the annovar file for annotating the VCF against RefSeq\n";
-  print "	--genome:		the human genome sequence, in FASTA format\n";
-  print "	--out:			the output file\n";
+  print "\t--annovar:\tthe annovar file for annotating the VCF against RefSeq\n";
+  print "\t--genome:\tthe human genome sequence, in FASTA format\n";
+  print "\t--out:\tthe output file\n";
+  print "\t--col_gene:\tindex of the column that contains the gene information, default 3\n";
+  print "\t--col_chrom:\tindex of the column that contains chromosome information, default 4\n";
+  print "\t--col_index:\tindex of the column that contains locus index information, default 5\n";
+  print "\t--col_from:\tindex of the column that contains reference nucleotide, default 7\n";
+  print "\t--col_to:\tindex of the column that contains mutated nucleotide, default 8\n";
   exit();
 }
 
@@ -48,10 +63,12 @@ print $OUT "Hugo_Symbol	Tumor_Sample_Barcode	effect	categ	NCBI_Build	Chromosome	
 my $basename = basename($annovar_file, ".exonic_variant_function");
 open my $AIN, "<$annovar_file" or die "Cannot open file: $!\n";
 while(<$AIN>)  {
+  next if(/^\#/);
   chomp;
+  my $line = $_;
   my @decom = split /\s+/, $_;
   my $n = scalar @decom;
-  my @g_info = split /\:/, $decom[$n - 11];
+  my @g_info = split /\:/, $decom[$col_gene];
   my $gene = $g_info[0];
   my $patient = $basename;
   my $effect;
@@ -66,23 +83,23 @@ while(<$AIN>)  {
     my $is_ts = 0;    # if the mutation/vairant is transition
     my $is_st = 0;    # if the mutation/variant correspond to strong bond (C-G)
     # varify if the genome sequence fits the annotation
-    if(!exists $hg{$decom[$n - 10]} || uc(substr($hg{$decom[$n - 10]}, $decom[$n - 9] - 1, 1)) ne uc($decom[$n - 7]))  {
+    if(!exists $hg{$decom[$col_chrom]} || uc(substr($hg{$decom[$col_chrom]}, $decom[$col_index] - 1, 1)) ne uc($decom[$n - 7]))  {
       die "Inconsistent annotation/lack of chromosome in sequence database\n";
     }
     # annotate the variant
-    if((uc($decom[$n - 7]) eq 'C' and uc(substr($hg{$decom[$n - 10]}, $decom[$n - 9], 1)) eq 'G') ||
-       (uc($decom[$n - 7]) eq 'G' and uc(substr($hg{$decom[$n - 10]}, $decom[$n - 9] - 2, 1)) eq 'C')
+    if((uc($decom[$col_from]) eq 'C' and uc(substr($hg{$decom[$col_chrom]}, $decom[$col_index] - 1, 1)) eq 'G') ||
+       (uc($decom[$col_from]) eq 'G' and uc(substr($hg{$decom[$col_chrom]}, $decom[$col_index] - 1, 1)) eq 'C')
     )  {
       $is_cg = 1;
     }
-    if((uc($decom[$n - 7]) eq 'A' and uc($decom[$n - 6]) eq 'G') ||
-       (uc($decom[$n - 7]) eq 'G' and uc($decom[$n - 6]) eq 'A') ||
-       (uc($decom[$n - 7]) eq 'C' and uc($decom[$n - 6]) eq 'T') ||
-       (uc($decom[$n - 7]) eq 'T' and uc($decom[$n - 6]) eq 'C')
+    if((uc($decom[$col_from]) eq 'A' and uc($decom[$col_to]) eq 'G') ||
+       (uc($decom[$col_from]) eq 'G' and uc($decom[$col_to]) eq 'A') ||
+       (uc($decom[$col_from]) eq 'C' and uc($decom[$col_to]) eq 'T') ||
+       (uc($decom[$col_from]) eq 'T' and uc($decom[$col_to]) eq 'C')
     )  {
       $is_ts = 1;
     }
-    if(uc($decom[$n - 7]) eq 'C' || uc($decom[$n - 7]) eq 'G')  {
+    if(uc($decom[$col_from]) eq 'C' || uc($decom[$col_from]) eq 'G')  {
       $is_st = 1;
     }
     if($is_cg and $is_ts)  {
@@ -95,13 +112,17 @@ while(<$AIN>)  {
       $category = 4;
     }  elsif(!$is_st and $is_ts)  {
       $category = 5;
-    }  elsif($is_st and !$is_ts)  {
+    }  elsif(!$is_st and !$is_ts)  {
       $category = 6;
     }
   }
-  $decom[$n - 10] =~ /chr(\S+)/;
+  $decom[$col_chrom] =~ /chr(\S+)/;
   my $chrome = $1;
-  print $OUT "$gene	$patient	$effect	$category	37	$chrome	$decom[$n - 9]	$decom[$n - 8]	$decom[$n - 7]	$decom[$n - 6]	$decom[$n - 6]\n";
+  if($line =~ /het/)  {
+    print $OUT "$gene	$patient	$effect	$category	37	$chrome	$decom[$col_index]	$decom[$col_index + 1]	$decom[$$col_from]	$decom[$col_from]	$decom[$col_to]\n";
+  } else  {
+    print $OUT "$gene	$patient	$effect	$category	37	$chrome	$decom[$col_index]	$decom[$col_index + 1]	$decom[$$col_from]	$decom[$col_to]	$decom[$col_to]\n";
+  }
 }
 close $AIN;
 close $OUT;
