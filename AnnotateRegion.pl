@@ -40,27 +40,53 @@ while(<$IN>) {
   my @decom = split /\t+/, $_;
   my $gid = $decom[1]; my $chrom = $decom[2]; my $strand = $decom[3]; my $gname = $decom[12];
   if($gid =~ /^NM\_/)  {
-    my @frag_info = ($chrom, $strand, $decom[4], $decom[6] - 1, $gid, $gname, "5\'UTR");
+    my @frag_info; 
+    if($strand eq '+') {
+      @frag_info = ($chrom, $strand, $decom[4], $decom[6] - 1, $gid, $gname, "5\'UTR");
+    } else  {
+      @frag_info = ($chrom, $strand, $decom[4], $decom[6] - 1, $gid, $gname, "3\'UTR");
+    }
+    #print "PUSHED:  @frag_info\n";    
     push @region_info, \@frag_info;
   }
   my @begin = split /\,/, $decom[9];
   my @end = split /\,/, $decom[10];
   for(my $i = 0; $i < $decom[8]; ++ $i) {
+    
+    next if($end[$i] < $decom[6]);
+    #print "$i $begin[$i]  $end[$i]  $decom[6]\n";
     my @frag_info = ($chrom, $strand, $begin[$i], $end[$i], $gid, $gname, "exon");
+    $frag_info[2] = $decom[6] if($gid =~ /^NM\_/ && $frag_info[2] < $decom[6]);
+    $frag_info[3] = $decom[7] if($gid =~ /^NM\_/ && $frag_info[3] > $decom[7]);
+    #print "PUSHED:  @frag_info\n";    
     push @region_info, \@frag_info;
-    if($i < $decom[8] - 1)  {
-      @frag_info = ($chrom, $strand, $end[$i] + 1, $begin[$i + 1] - 1, $gid, $gname, "intron");
+    last if($end[$i] > $decom[7]);
+    
+    if($i < $decom[8] - 1 && $begin[$i + 1] < $decom[7])  {
+      my @frag_info = ($chrom, $strand, $end[$i] + 1, $begin[$i + 1] - 1, $gid, $gname, "intron");
+      #print "PUSHED:  @frag_info\n";    
       push @region_info, \@frag_info;
     }
   }
   if($gid =~ /^NM\_/)  {
-    my @frag_info = ($chrom, $strand, $decom[7] + 1, $decom[5], $gid, $gname, "3\'UTR");
+    my @frag_info; 
+    if($strand eq '+') {
+      @frag_info = ($chrom, $strand, $decom[7] + 1, $decom[5], $gid, $gname, "3\'UTR");
+    } else  {
+      @frag_info = ($chrom, $strand, $decom[7] + 1, $decom[5], $gid, $gname, "5\'UTR");
+    }
+    #print "PUSHED:  @frag_info\n";    
     push @region_info, \@frag_info;
   }
 }
 close $IN;
 # sorting the region annotation
 @region_info = sort {$a->[0] cmp $b->[0] || $a->[2] <=> $b->[2]} @region_info; 
+
+#for(my $i = 0; $i < scalar(@region_info); ++ $i) {
+#  print "@{$region_info[$i]}\n";
+#}
+#die;
 
 # define range for each chromosome
 my %chrom_begin; my %chrom_end;
@@ -84,7 +110,7 @@ while(<$QIN>) {
   next if(/^\#/);
   my $line = $_;
   my @decom = split /\t/, $_;
-  if($decom[$column_ID] =~ /(chr.+)\:(\d+)\-(\d+)/)  {
+  if($decom[$column_ID] =~ /(chr[^\:]+)\:(\d+)\-(\d+)/)  {
     # binary search 
     my $chr = $1;
     my $fbegin = $2; my $fend = $3;
@@ -107,7 +133,7 @@ close $QIN;
 @query_info = sort {$a->[2] cmp $b->[2] || $a->[4] <=> $b->[4]} @query_info; 
 my $qindex = 0; my $rindex = 0;
 while($qindex < scalar(@query_info)) {
-  
+  print "@{$query_info[$qindex]}\n";
   # special case
   if($query_info[$qindex][2] eq 'unknown')  {
     push @{$query_info[$qindex]}, "unknown"; ++ $qindex; next;
