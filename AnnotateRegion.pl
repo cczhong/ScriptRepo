@@ -25,6 +25,7 @@ if($help || !defined $annot_file || !defined $query_file || !defined $column_ID 
   print "\t--query:\tThe query file, one of the column should contain genomic regions in (chromosome):(begin)-(end) format;\n";
   print "\t\t\tif (begin) is larger than (end) it indicates that the region is on the minus strand\n";
   print "\t--colID:\tThe column ID in the query file that contains the genomic region information\n";
+  print "\t--out:\tThe output file\n";
   print "\t--check_strand:\tCheck strand consistency, default NO\n";
   print "\t--help:\tPrint this information\n";
   exit();
