@@ -1,8 +1,25 @@
 #!/usr/bin/perl -w
 use strict;
+use Getopt::Long;
 
-my $cosmic_annovar_file = shift;	# cosmic database as provided in ANNOVAR format
-my $file = shift;			# the individual hit (snp) of cosmic
+my $cosmic_annovar_file;	# cosmic database as provided in ANNOVAR format
+my $file;			# the individual hit (snp) of cosmic
+my $help;
+
+GetOptions (
+  "COSMIC=s" => \$cosmic_annovar_file,
+  "ANNOVAR_hits=s" => \$file,
+  "help" => \$help
+) or die("Error in command line arguments\n");
+
+if($help || !defined $cosmic_annovar_file || !defined $file)  {
+  print "EstimateCOSMICRisk.pl: estimating the risk of cancer through referring to COSMIC database\n";
+  print "Usage: perl EstimateCOSMICRisk.pl --COSMIC=[COSMIC_DB] --ANNOVAR_hits=[ANNOVAR_OUTPUT]\n";
+  print "\t--COSMIC:\tthe COSMIC database used by ANNOVAR, usually under ANNOVARDIR\/humandb\n";
+  print "\t--ANNOVAR_hits:\tthe ANNOVAR output file using filter mode through referring to COSMIC database\n";
+  print "\t--help:\t\tprint this message\n";
+  exit();
+}
 
 open my $BIN, "<$cosmic_annovar_file" or die "Cannot open background file: $!\n";
 my %type_hash;
