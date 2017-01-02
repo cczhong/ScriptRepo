@@ -106,9 +106,9 @@ while(<$IN>)  {
     my @decom = split /\s+/, $_;
     if($num_cols > 0 && $num_cols != scalar(@decom))  {
       # imcompatible file or corrupted file, abort
-      print "$_\n";
-      print "Warning: Incompatible number of columns, the file may be corrupted. Abort.\n";
-      exit;
+      #print "$_\n";
+      #print "Warning: Incompatible number of columns, the file may be corrupted. Abort.\n";
+      next;
     }
     $num_cols = scalar(@decom);
     push @aln_info, \@decom;
