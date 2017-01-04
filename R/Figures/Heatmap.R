@@ -34,7 +34,7 @@ data_m<-data.matrix(data_m)
 # define colors
 new_vermillion = rgb(213, 94, 0, maxColorValue=255)
 new_blue = rgb(0, 114, 178, maxColorValue=255)
-my_palette <- colorRampPalette(c("red", "black", "green"))(n = 299)
+my_palette <- colorRampPalette(c("green", "black", "red"))(n = 299)
 
 postscript(file=opt$out, onefile=FALSE, horizontal=FALSE, width=8, height=12)
 par(pin=c(6,4),cex.main=3)
