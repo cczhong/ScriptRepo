@@ -1,0 +1,2 @@
+GenomicSeq:
+	g++ -O3 -std=c++11 GenomicSeq.cpp loader.cc bio_alphabet.cc -o GenomicSeq
