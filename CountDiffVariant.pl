@@ -12,6 +12,7 @@ my $filter_columns;
 my $filter_criteria;
 my $filter_thresholds;
 my $filter_mode = 1;
+my $out_mode = 0;
 my $out_file;
 my $help;
 
@@ -26,6 +27,7 @@ GetOptions(
   "filter_thresholds=s" => \$filter_thresholds,
   "filter_criteria=s" => \$filter_criteria,
   "filter_mode=i" => \$filter_mode,
+  "out_mode=i" => \$out_mode,
   "out=s" => \$out_file,
   "help" => \$help
 ) or die "Error in argument parsing: $!\n";
@@ -51,6 +53,7 @@ if($help || !defined $files_affected || !defined $files_unaffected || !defined $
   print "  \t\t\texample: \"lt,ge,eq,gt\"; supported operators: gt(>), lt(<), ge(>=), le(<=), eq(==), ne(!=)\n";
   print "  --filter_thresholds:\tnumerical values used for filtering, separated by comma \",\"\n";
   print "  --filter_mode:\t0: filters apply to both affected and unaffected groups; 1: affected only; 2: unaffected only (default: 1 affected only)\n";
+  print "  --out_mode:\t0: output as in-house annotation format; 1: output annovar input format (default: 0)\n";
   print "  --out:\t\tthe output file\n";
   print "  --help:\t\tprint this information\n";
   exit();
@@ -81,6 +84,7 @@ foreach(@affected) {
   my $file = $_;
   open my $IN, "<$file" or die "Cannot open file: $!\n";
   while(<$IN>) {
+    next if /^\#/;
     chomp;
     my @decom = split /\t/, $_;
     # filter out the entries
@@ -112,6 +116,7 @@ foreach(@unaffected) {
   my $file = $_;
   open my $IN, "<$file" or die "Cannot open file: $!\n";
   while(<$IN>) {
+    next if /^\#/;
     chomp;
     my @decom = split /\t/, $_;
     if($filter_mode == 2 || $filter_mode == 0)  {
@@ -139,11 +144,17 @@ foreach(@unaffected) {
 
 # output the results
 open my $OUT, ">$out_file" or die "Cannot create file: $!\n";
-print $OUT "#Variant_Key\tAnnotation_Info\tOccurrence_Affected\tOccurrence_Unaffected\n";
+print $OUT "#Variant_Key\tAnnotation_Info\tOccurrence_Affected\tOccurrence_Unaffected\n" if $out_mode == 0;
 foreach (sort keys %all_hash)  {  
   if(exists $affected_hash{$_} && $affected_hash{$_} >= $min_affected && (! exists $unaffected_hash{$_} || $unaffected_hash{$_} <= $max_unaffected))  {
-    print $OUT "$_\t$affected_info_hash{$_}\t$affected_hash{$_}\t$unaffected_hash{$_}\n" if exists $unaffected_hash{$_};
-    print $OUT "$_\t$affected_info_hash{$_}\t$affected_hash{$_}\t0\n" if ! exists $unaffected_hash{$_};
+    if($out_mode == 0)  {
+      print $OUT "$_\t$affected_info_hash{$_}\t$affected_hash{$_}\t$unaffected_hash{$_}\n" if exists $unaffected_hash{$_};
+      print $OUT "$_\t$affected_info_hash{$_}\t$affected_hash{$_}\t0\n" if ! exists $unaffected_hash{$_};
+    } else  {
+      $_ =~ /(\S+)\:(\d+)\-(\d+)\|\|(\S+)\>(\S+)/;
+      print $OUT "$1\t$2\t$3\t$4\t$5\t$affected_hash{$_}\t$unaffected_hash{$_}\n" if exists $unaffected_hash{$_};
+      print $OUT "$1\t$2\t$3\t$4\t$5\t$affected_hash{$_}\t0\n" if ! exists $unaffected_hash{$_};
+    }
   }
 }
 close $OUT;
