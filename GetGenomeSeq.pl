@@ -21,7 +21,7 @@ GetOptions(
 if(!defined $gfile || (!defined $list && !defined $interval) || defined $help)  {
   print "GetGenomeSeq.pl: get sequence from the reference genome and output as FASTA\n";
   print "Usage: perl GetGenomeSeq.pl --list=[LIST_OF_INTERVAL] --ref=[REF_GENOME]\n";
-  print "	--list:\tinterval list; 4 fields per line: chromosome begin end strand\n";
+  print "	--list:\tinterval list; 4-5 fields per line: chromosome begin end strand  annotation(optional)\n";
   print "	--ref:\tthe reference genome in FASTA format\n";
   print "	--intv:\tfetch single interval only; format example:\"chr1:23-1213-\" or \"chrX:1234-23234+\"\n";
   print "	--out:\twirte to the file instead of STDOUT\n";
@@ -47,8 +47,8 @@ if(defined $list)  {
   while(<$LIN>) {
     chomp;
     my @decom = split /\s+/, $_;
-    my @interval = ($decom[1], $decom[2], $decom[3]);
-    push @{$to_fetch{$decom[0]}}, \@interval;
+    my $chr = $decom[0]; shift @decom;
+    push @{$to_fetch{$chr}}, \@decom;
   }
   close $LIN;
 }
@@ -107,10 +107,14 @@ while(<$GIN>) {
           }
         }
         if(defined $OUT)  {
-          print $OUT ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]\n";
+          print $OUT ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]";
+          print $OUT "\t${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
+          print $OUT "\n" if !defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print $OUT "$st\n";
         } else  {
-          print ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]\n";
+          print ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]";
+          print "\t${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
+          print "\n" if !defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print "$st\n";
         }
       } elsif(${$to_fetch{$cchrom}}[$itv_index]->[0] >= $cbegin && 
