@@ -31,15 +31,15 @@ if(!defined $gfile1 || (defined $duplex && !defined $gfile2) || !defined $out)  
   print "GenRandSeq.pl: generate random reads (singular or duplex) from given database.\n";
   print "Usage: perl FastaSubSampling --seq1=[FASTA_FILE] --out=[OUTPUT_FILE]\n";
   print "Usage: perl FastaSubSampling --duplex --seq1=[FASTA_FILE] --seq2=[FASTA_FILE] --out=[OUTPUT_FILE]\n";
-  print "	--duplex:	whether to generate duplex reads\n";
-  print "	--seq1:		the first sequence database\n";
-  print "	--seq2:		the second sequence database\n";
-  print "	--num:		the number of reads to generate (default 1000000)\n";
-  print "	--len:		the length of the generated reads (default 100)\n";
-  print "	--error:	the expected error rate (default 0.01)\n";
-  print "	--minduplex:the mininum length of each duplex (default 45)\n";
-  print "	--maxduplex:the maximum length of each duplex (default 50)\n";
-  print "	--out:		the output file\n";
+  print "	--duplex:	    whether to generate duplex reads\n";
+  print "	--seq1:		    the first sequence database\n";
+  print "	--seq2:		    the second sequence database\n";
+  print "	--num:		    the number of reads to generate (default 1000000)\n";
+  print "	--len:		    the length of the generated reads (default 100)\n";
+  print "	--error:	    the expected error rate (default 0.01)\n";
+  print "	--minduplex:    the mininum length of each duplex (only effective if --duplex is set, default 45)\n";
+  print "	--maxduplex:    the maximum length of each duplex (only effective if --duplex is set, default 50)\n";
+  print "	--out:		    the output file\n";
   exit();
 }
 
@@ -70,7 +70,7 @@ close $IN;
 my @seq2;
 my @name2;
 $id = -1;
-if($duplex eq 'Y' && defined $gfile2)    {
+if($duplex && defined $gfile2)    {
     open $IN, "<$gfile2" or die "Cannot open file: $!\n";
     while(<$IN>) {
         chomp;
