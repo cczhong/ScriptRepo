@@ -37,8 +37,8 @@ if(!defined $gfile1 || (defined $duplex && !defined $gfile2) || !defined $out)  
   print "	--num:		    the number of reads to generate (default 1000000)\n";
   print "	--len:		    the length of the generated reads (default 100)\n";
   print "	--error:	    the expected error rate (default 0.01)\n";
-  print "	--minduplex:    the mininum length of each duplex (only effective if --duplex is set, default 45)\n";
-  print "	--maxduplex:    the maximum length of each duplex (only effective if --duplex is set, default 50)\n";
+  print "	--mindup:     the mininum length of each duplex (only effective if --duplex is set, default 45)\n";
+  print "	--maxdup:     the maximum length of each duplex (only effective if --duplex is set, default 50)\n";
   print "	--out:		    the output file\n";
   exit();
 }
