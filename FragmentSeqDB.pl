@@ -127,6 +127,7 @@ while($to_gen > 0)  {
       print $OUT ">frag_$fid\:\:$src_header\:\:$frag_begin-$frag_end\n";
       print $OUT "$str\n";
       -- $to_gen;
+      $max_failure = 1000000; # reset the number of allowed faliures after each success
     }
   } else {
     die "Maximum number of sampling failure exceeded... Please check input parameters.\n";
