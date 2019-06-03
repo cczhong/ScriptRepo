@@ -57,8 +57,7 @@ if($help || !$tumor_vcf || !defined $out)  {
   exit;
 }
 
-# VDB: variant distance bias, the smaller the better, should include into filtering
-# 
+# VDB
 
 # identifying the VAF (variant allele frequency) of the germ line mutations 
 my %tumor_norm_hash;

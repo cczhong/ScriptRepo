@@ -88,7 +88,9 @@ my $q_name;
 my @aln_info;
 while(<$IN>)  {
   chomp;
-  if(/\# Query\: (\S+)/)  {
+  my $line = $_;
+  #print "$line\n";
+  if($line =~ /\# Query\: (\S+)/)  {
     # alignment results of a new query begins
     my $new_q_name = $1;
     if(defined $q_name && scalar(@aln_info) == 0)  {
@@ -98,20 +100,21 @@ while(<$IN>)  {
       undef @aln_info;
     }
     $q_name = $new_q_name;
-  }  elsif(/\#/)  {
+  }  elsif($line =~ /\#/)  {
     # other information sections, ignore them
     next;
   }  else  {
     # actual alignment results
-    my @decom = split /\s+/, $_;
+    my @decom = split /\s+/, $line;
     if($num_cols > 0 && $num_cols != scalar(@decom))  {
       # imcompatible file or corrupted file, abort
-      #print "$_\n";
+      #print "$line\n";
       #print "Warning: Incompatible number of columns, the file may be corrupted. Abort.\n";
-      next;
+      #exit;
+    }  else {
+      $num_cols = scalar(@decom);
+      push @aln_info, \@decom;
     }
-    $num_cols = scalar(@decom);
-    push @aln_info, \@decom;
   }
 }
 if(defined $q_name && scalar(@aln_info) == 0)  {

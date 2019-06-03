@@ -55,3 +55,5 @@ for(my $i = scalar(@lengths) - 1; $i >= 0; -- $i)  {
     last;
   }
 }
+
+print "$total_length\n";

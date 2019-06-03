@@ -36,19 +36,19 @@ if(!defined $in_seq_file || !defined $out_seq_file || !defined $read_len || !def
 # value is the header of the sequence
 my %alphabet;
 my @indexes; my @headers;
-my $concat_seq = "";
+my $concat_seq = '$';
 open my $IN, "<$in_seq_file" or die "Cannot open file: $!\n";
 while(<$IN>)  {
   chomp;
   if(/^>(.*)/)  {
+    push @indexes, length($concat_seq) - 1;
     my $header = $1;
     my $seq = <$IN>;
     chomp $seq;
     for(my $i = 0; $i < length($seq); ++ $i)  {
       $alphabet{substr($seq, $i, 1)} = 1;
     }
-    $concat_seq .= $seq . '$';	# use the '$' sign as separator of individual sequences
-    push @indexes, length($concat_seq) - 1; 
+    $concat_seq .= $seq . '$';	# use the '$' sign as separator of individual sequences 
     push @headers, $header;
   }
 }
@@ -98,6 +98,7 @@ while($to_gen > 0)  {
     # get the fragmented reads
     my $begin = int(rand(length($concat_seq)));
     my $str = substr($concat_seq, $begin, $eff_len);
+    #print "$str\n";
     # check if the sequence contains sequence terminating symbol
     if($str =~ /\$/)  {
       -- $max_failure;
@@ -105,12 +106,15 @@ while($to_gen > 0)  {
     }  else  {
       # search the ID of the sequence
       my $index = BinarySearch(\@indexes, $begin);
-      my $src_header = $headers[$index];
+      my $src_header = $headers[$index - 1];
       # define the region
       my $fid = $num_reads - $to_gen;
+      #print "begin:	$begin	index: $index\n";
       my $frag_begin = $begin - $indexes[$index - 1] - 1;
       my $frag_end = $frag_begin + $eff_len - 1;
       if($frag_begin < 0 || $frag_end < 0)  {
+        #print "place 2	$index	$indexes[$index]\n";
+	#die;
         -- $max_failure;
         next;
       }
@@ -127,7 +131,8 @@ while($to_gen > 0)  {
       print $OUT ">frag_$fid\:\:$src_header\:\:$frag_begin-$frag_end\n";
       print $OUT "$str\n";
       -- $to_gen;
-      $max_failure = 1000000; # reset the number of allowed faliures after each success
+      #print "$max_failure\n";
+      $max_failure = 1000000;
     }
   } else {
     die "Maximum number of sampling failure exceeded... Please check input parameters.\n";

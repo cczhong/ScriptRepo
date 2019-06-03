@@ -108,12 +108,12 @@ while(<$GIN>) {
         }
         if(defined $OUT)  {
           print $OUT ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]";
-          print $OUT "\t${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
+          print $OUT "||${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print $OUT "\n" if !defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print $OUT "$st\n";
         } else  {
           print ">$cchrom:${$to_fetch{$cchrom}}[$itv_index]->[0]-${$to_fetch{$cchrom}}[$itv_index]->[1]${$to_fetch{$cchrom}}[$itv_index]->[2]";
-          print "\t${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
+          print "||${$to_fetch{$cchrom}}[$itv_index]->[3]\n" if defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print "\n" if !defined ${$to_fetch{$cchrom}}[$itv_index]->[3];
           print "$st\n";
         }
@@ -133,3 +133,4 @@ while(<$GIN>) {
   }
 }
 close $GIN;
+

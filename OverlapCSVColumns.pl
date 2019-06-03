@@ -122,7 +122,7 @@ while(<$IN1>)  {
   chomp;
   next if /^\#/;	# remove comments
   my $line = $_;
-  my @decom = split /\s+/, $line;
+  my @decom = split /\t/, $line;
   my $key = "";
   foreach(my $i = 0; $i < scalar(@col1_ids); ++ $i)  {
     if(scalar @decom < $col1_ids[$i] + 1)  {
@@ -141,7 +141,7 @@ while(<$IN2>)  {
   chomp;
   next if /^\#/;        # remove comments
   my $line = $_;
-  my @decom = split /\s+/, $line;
+  my @decom = split /\t/, $line;
   my $key = "";
   foreach(my $i = 0; $i < scalar(@col2_ids); ++ $i)  {
     if(scalar @decom < $col2_ids[$i] + 1)  {

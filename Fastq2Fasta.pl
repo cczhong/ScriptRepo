@@ -4,10 +4,12 @@ use Getopt::Long;
 
 my $fq_file;
 my $fa_file;
+my $min_len = 10;
 
 GetOptions (
   "fq=s" => \$fq_file,
-  "fa=s" => \$fa_file
+  "fa=s" => \$fa_file,
+  "l=i" => \$min_len,
 ) or die("Error in command line arguments\n");
 
 if(!defined $fq_file || !defined $fa_file)  {
@@ -15,6 +17,7 @@ if(!defined $fq_file || !defined $fa_file)  {
   print "Usage: perl Fastq2Fasta.pl --fq=[FASTQ_FILE] --fa=[FASTA_FILE]\n";
   print " --fq:   the FASTQ file\n";
   print " --fa:   the FASTA file\n";
+  print " --l:    the minimum length to be output\n";
   exit;
 }
 
@@ -27,9 +30,13 @@ while(<$IN>)  {
   ++ $n;
   if($n % 4 == 1 && $line =~ /^\@/)  {
     $line =~ s/^\@/\>/;
-    print $OUT "$line\n";
+    my $header = $line;
+    #print $OUT "$line\n";
     $line = <$IN>; ++ $n;
-    print $OUT "$line";
+    my $seq = $line;
+    if(length($seq) >= $min_len)  {
+      print $OUT "$header\n$seq";
+    }
   }
 }
 close $IN;
