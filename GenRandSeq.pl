@@ -10,9 +10,11 @@ my $gfile1;
 my $gfile2;
 my $out;
 my $num_simulation = 1000000;
+my $is_peptide;
 my $rlen = 100;
 my $min_dup = 45;
 my $max_dup = 50;
+my $len_buffer = 0.5;   # the sequence is allowed to be as short as $len_buffer * $rlen
 my $error_rate = 0.01;
 
 GetOptions (
@@ -22,9 +24,11 @@ GetOptions (
   "out=s" => \$out,
   "num=i" => \$num_simulation,
   "len=i" => \$rlen,
+  "buffer=f" => \$len_buffer,
   "mindup=i" => \$min_dup,
   "maxdup=i" => \$max_dup,
-  "error=f" => \$error_rate
+  "error=f" => \$error_rate,
+  "peptide" => \$is_peptide
 ) or die("Error in command line arguments\n");
 
 if(!defined $gfile1 || (defined $duplex && !defined $gfile2) || !defined $out)  {
@@ -34,12 +38,14 @@ if(!defined $gfile1 || (defined $duplex && !defined $gfile2) || !defined $out)  
   print "	--duplex:	    whether to generate duplex reads\n";
   print "	--seq1:		    the first sequence database\n";
   print "	--seq2:		    the second sequence database\n";
+  print "	--out:		    the output file\n";
   print "	--num:		    the number of reads to generate (default 1000000)\n";
   print "	--len:		    the length of the generated reads (default 100)\n";
+  print "	--buffer:		the length buffer, i.e. the read can be as short as buffer*len (default 0.5)\n";
   print "	--error:	    the expected error rate (default 0.01)\n";
-  print "	--mindup:     the mininum length of each duplex (only effective if --duplex is set, default 45)\n";
-  print "	--maxdup:     the maximum length of each duplex (only effective if --duplex is set, default 50)\n";
-  print "	--out:		    the output file\n";
+  print "	--mindup:       the mininum length of each duplex (only effective if --duplex is set, default 45)\n";
+  print "	--maxdup:       the maximum length of each duplex (only effective if --duplex is set, default 50)\n";
+  print "	--peptide:      the input sequences are peptides (default NO)\n";
   exit();
 }
 
@@ -47,7 +53,16 @@ open my $OUT, ">$out" or die "Cannot create file for output: $!\n";
 
 srand(0);
 my @alpha;
-$alpha[0] = 'A'; $alpha[1] = 'C'; $alpha[2] = 'G'; $alpha[3] = 'T';
+if(!(defined $is_peptide))    {
+    $alpha[0] = 'A'; $alpha[1] = 'C'; $alpha[2] = 'G'; $alpha[3] = 'T';
+}   else    {
+    $alpha[0] = 'A'; $alpha[1] = 'R'; $alpha[2] = 'N'; $alpha[3] = 'D';
+    $alpha[4] = 'C'; $alpha[5] = 'Q'; $alpha[6] = 'E'; $alpha[7] = 'G';
+    $alpha[8] = 'H'; $alpha[9] = 'I'; $alpha[10] = 'L'; $alpha[11] = 'K';
+    $alpha[12] = 'M'; $alpha[13] = 'F'; $alpha[14] = 'P'; $alpha[15] = 'S';
+    $alpha[16] = 'T'; $alpha[17] = 'W'; $alpha[18] = 'Y'; $alpha[19] = 'V';
+}
+my $alpha_size = scalar(@alpha);
 
 # loads in the first file
 my @seq1;
@@ -90,20 +105,16 @@ if(!(defined $duplex))    {
     while($num_simulation > 0) {
         # generate the sequence
         my $x = int(rand(scalar(@seq1)));
-        my $y = int(rand(length($seq1[$x]) - $rlen));
-        my $sseq = substr($seq1[$x], $y, $rlen);
-
-        # check if "N" presents
-        if($sseq =~ /N/)    {
-            next;
-        }       
+        my $y = int(rand(length($seq1[$x])));
+        my $sseq = substr($seq1[$x], $y, $rlen); 
+        next if length($sseq) < $len_buffer * $rlen; 
     
         # if no N presents
         # introduce random errors
         my @decom = split //, $sseq;
         for(my $i = 0; $i < scalar(@decom); ++ $i)   {
             my $n1 = rand(1);
-            my $ax = int(rand(4));
+            my $ax = int(rand($alpha_size));
             if($n1 < $error_rate)    {
                 $decom[$i] = $alpha[$ax];
             }
@@ -122,15 +133,17 @@ if(!(defined $duplex))    {
     while($num_simulation > 0) {
         # generate the sequence
         my $x1 = int(rand(scalar(@seq1)));
-        my $y1 = int(rand(length($seq1[$x1]) - $rlen));
+        my $y1 = int(rand(length($seq1[$x1])));
         my $l1 = $min_dup + int(rand(scalar($max_dup - $min_dup)));
 
         my $x2 = int(rand(scalar(@seq2)));
-        my $y2 = int(rand(length($seq2[$x2]) - $rlen));
+        my $y2 = int(rand(length($seq2[$x2])));
         my $l2 = $min_dup + int(rand(scalar($max_dup - $min_dup)));
 
         my $sseq1 = substr($seq1[$x1], $y1, $l1);
         my $sseq2 = substr($seq2[$x2], $y2, $l2);
+
+        next if(length($sseq1) < $min_dup || length($sseq2) < $min_dup);
 
         # randomly generate sequence
         my @rs;
@@ -148,18 +161,12 @@ if(!(defined $duplex))    {
         $msseq .=$sseq2;
         $msseq .= $rs[2] if defined $rs[2];
 
-
-        #print ">>$sseq\n";
-
-        # check if "N" presents
-        if($msseq =~ /N/)    {
-            next;
-        }       
+        #print ">>$sseq\n";   
         # introduce random errors
         my @decom = split //, $msseq;
         for(my $i = 0; $i < scalar(@decom); ++ $i)   {
             my $n1 = rand(1);
-            my $ax = int(rand(4));
+            my $ax = int(rand($alpha_size));
             if($n1 < $error_rate)    {
                 $decom[$i] = $alpha[$ax];
             }
